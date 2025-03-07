@@ -1,0 +1,166 @@
+﻿@model NeoMarket.Application.DTOs.StoreDto
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    @{
+        ViewData["Title"] = Model?.Name ?? "Teste";
+    }
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Font Awesome para ícones -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet" />
+
+    <!-- Toastr CSS para notificações -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet" />
+
+    <!-- Biblioteca de animações -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
+
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/NeoMarket.styles.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
+            <div class="container-fluid">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@Model?.UrlSlug">
+                    <i class="fas fa-store"></i> @ViewData["Title"]
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@Model?.UrlSlug">
+                                <i class="fas fa-home"></i> Início
+                            </a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="dropdownCategorias" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-th-list"></i> Categorias
+                            </a>
+                            <ul class="dropdown-menu shadow-lg" aria-labelledby="dropdownCategorias">
+                                @foreach (var categoria in Model?.Categories ?? new List<string>())
+                                {
+                                    <li>
+                                        <a class="dropdown-item d-flex align-items-center" asp-controller="Category" asp-action="Index" asp-route-id="@categoria">
+                                            <i class="fas fa-angle-right me-2"></i>@categoria
+                                        </a>
+                                    </li>
+                                }
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index">
+                                <i class="fas fa-shopping-cart"></i> Carrinho
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-100 translate-middle p-1 rounded-circle">
+                                    3
+                                </span>
+                            </a>
+                        </li>
+
+                        @if (User.Identity.IsAuthenticated)
+                        {
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user"></i> Olá, @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-lg">
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Order" asp-action="Index">
+                                            <i class="fas fa-box"></i> Meus Pedidos
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="User" asp-action="Profile">
+                                            <i class="fas fa-user-cog"></i> Alterar Dados
+                                        </a>
+                                    </li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
+                                            <i class="fas fa-sign-out-alt"></i> Sair
+                                        </a>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-link-login" asp-controller="Auth" asp-action="Login">
+                                    <i class="fas fa-user"></i> Fazer Login
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Carrossel Dinâmico -->
+    <div id="bannerCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+        <div class="carousel-inner">
+            @if (Model?.CarouselImages != null && Model.CarouselImages.Any())
+            {
+                int index = 0;
+                foreach (var image in Model.CarouselImages)
+                {
+                    <div class="carousel-item @(index == 0 ? "active" : "")">
+                        <img src="@image.ImageUrl" class="d-block w-100" alt="@image.AltText">
+                    </div>
+                    index++;
+                }
+            }
+            else
+            {
+                <div class="carousel-item active">
+                    <img src="https://via.placeholder.com/1500x500" class="d-block w-100" alt="Imagem Padrão">
+                </div>
+            }
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Anterior</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+            <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            <span class="visually-hidden">Próximo</span>
+        </button>
+    </div>
+
+    <div class="container mt-4">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="bg-light text-center text-lg-start border-top mt-auto">
+        <div class="container p-4">
+            <p>&copy; 2025 - NeoMarket. Todos os direitos reservados.</p>
+            <a asp-controller="Home" asp-action="Privacy" class="text-decoration-none">Política de Privacidade</a>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
