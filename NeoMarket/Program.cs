@@ -1,16 +1,31 @@
 using NeoMarket.Infrastructure.DependencyInjection;
+using NeoMarket.Filters; // Certifique-se de importar o filtro personalizado
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-builder.Services.AddControllersWithViews();
+// Configurar a sessão
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+
+// Registrar o filtro global e os serviços
+builder.Services.AddControllersWithViews(options =>
+{
+    options.Filters.Add<StoreDataFilter>(); // Adiciona o filtro global para carregar dados da loja
+});
 
 // Adiciona os serviços de aplicação usando a extensão criada
 builder.Services.AddApplicationServices(builder.Configuration);
 
+// Registrar o IHttpContextAccessor e o IStoreService para o filtro
+builder.Services.AddHttpContextAccessor();
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurar o pipeline de requisição
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -19,12 +34,18 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-
+app.UseSession(); // Ativa o uso de sessão
 app.UseRouting();
-
 app.UseAuthorization();
 
-// Rota personalizada para a URL amigável com urlSlug
+// Rota para produtos por subcategoria
+app.MapControllerRoute(
+    name: "subcategoria",
+    pattern: "produtos/{subCategorySlug}",
+    defaults: new { controller = "Product", action = "Index" }
+);
+
+// Rota personalizada para lojas
 app.MapControllerRoute(
     name: "storeRoute",
     pattern: "{urlSlug}",

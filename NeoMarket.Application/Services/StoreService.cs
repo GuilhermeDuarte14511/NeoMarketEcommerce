@@ -26,17 +26,30 @@ namespace NeoMarket.Application.Services
                 Description = storeData.Description,
                 UrlSlug = storeData.UrlSlug,
                 Categories = storeData.Products
-                            .Where(p => p.Category != null && p.CategoryId > 0)
-                            .Select(p => p.Category.Name)
-                            .Where(c => !string.IsNullOrEmpty(c))
-                            .Distinct()
-                            .ToList(),
+                    .Where(p => p.Category != null)
+                    .GroupBy(p => p.Category)
+                    .Select(g => new CategoryDto
+                    {
+                        Id = g.Key.Id,
+                        Name = g.Key.Name,
+                        Subcategories = g.Where(p => p.Subcategory != null)
+                                         .GroupBy(p => p.Subcategory.Id)
+                                         .Select(sg => new SubcategoryDto
+                                         {
+                                             Id = sg.Key,
+                                             Name = sg.First().Subcategory.Name,
+                                             UrlSlug = sg.First().Subcategory.UrlSlug
+                                         })
+                                         .ToList()
+                    })
+                    .ToList(),
                 Products = storeData.Products.Select(p => new ProductDto
                 {
                     Name = p.Name,
                     Description = p.Description,
                     Price = p.Price,
-                    CategoryName = p.Category?.Name
+                    CategoryName = p.Category?.Name,
+                    SubcategoryName = p.Subcategory?.Name
                 }).ToList(),
                 CarouselImages = storeData.CarouselImages.Select(c => new CarouselImageDto
                 {
@@ -45,6 +58,5 @@ namespace NeoMarket.Application.Services
                 }).ToList()
             };
         }
-
     }
 }

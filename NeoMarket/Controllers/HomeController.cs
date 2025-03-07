@@ -26,6 +26,10 @@ namespace NeoMarket.Controllers
                 return RedirectToAction("Error");
             }
 
+            HttpContext.Session.SetString("StoreName", storeDto.Name);
+            HttpContext.Session.SetString("StoreUrlSlug", storeDto.UrlSlug);
+
+            ViewData["StoreDto"] = storeDto;
             ViewData["Title"] = storeDto.Name;
 
             return View(storeDto);

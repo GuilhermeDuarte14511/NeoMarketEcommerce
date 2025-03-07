@@ -17,7 +17,10 @@ namespace NeoMarket.Infrastructure.Data
         public DbSet<Address> Addresses { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Category> Categories { get; set; }
+        public DbSet<Subcategory> Subcategories { get; set; }
         public DbSet<StoreCarouselImage> StoreCarouselImages { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Brand> Brands { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -31,6 +34,8 @@ namespace NeoMarket.Infrastructure.Data
             ConfigurePayment(modelBuilder);
             ConfigureStoreCarouselImage(modelBuilder);
             ConfigureAddress(modelBuilder);
+            ConfigureCategory(modelBuilder);
+            ConfigureSubcategory(modelBuilder);
         }
 
         private void ConfigureUser(ModelBuilder modelBuilder)
@@ -123,7 +128,7 @@ namespace NeoMarket.Infrastructure.Data
 
             modelBuilder.Entity<Product>()
                 .HasOne(p => p.Category)
-                .WithMany()
+                .WithMany(c => c.Products)
                 .HasForeignKey(p => p.CategoryId)
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
@@ -133,7 +138,26 @@ namespace NeoMarket.Infrastructure.Data
                 .WithMany(s => s.Products)
                 .HasForeignKey(p => p.StoreId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Product>()
+               .HasMany(p => p.Reviews)
+               .WithOne(r => r.Product)
+               .HasForeignKey(r => r.ProductId);
+
+            modelBuilder.Entity<Product>()
+             .HasOne(p => p.Brand)
+             .WithMany(b => b.Products) 
+             .HasForeignKey(p => p.BrandId)
+             .OnDelete(DeleteBehavior.SetNull);
+
+
+
+            modelBuilder.Entity<Product>()
+            .HasMany(p => p.Reviews)
+            .WithOne(r => r.Product)
+            .HasForeignKey(r => r.ProductId);
         }
+
 
         private void ConfigureCart(ModelBuilder modelBuilder)
         {
@@ -234,5 +258,34 @@ namespace NeoMarket.Infrastructure.Data
                 .IsRequired()
                 .HasMaxLength(10);
         }
+
+        private void ConfigureCategory(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Category>()
+                .Property(c => c.Name)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            modelBuilder.Entity<Category>()
+                .HasMany(c => c.Subcategories)
+                .WithOne(s => s.Category)
+                .HasForeignKey(s => s.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        private void ConfigureSubcategory(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Subcategory>()
+                .Property(s => s.Name)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            modelBuilder.Entity<Subcategory>()
+                .HasMany(s => s.Products)
+                .WithOne(p => p.Subcategory)
+                .HasForeignKey(p => p.SubcategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+        }
+
     }
 }

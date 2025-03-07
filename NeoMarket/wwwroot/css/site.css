@@ -1,4 +1,4 @@
-/* Estilos Globais */
+ï»¿/* Estilos Globais */
 html {
     font-size: 14px;
     position: relative;
@@ -21,7 +21,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Botões e Formulários */
+/* BotÃµes e FormulÃ¡rios */
 .btn:focus,
 .btn:active:focus,
 .btn-link.nav-link:focus,
@@ -56,17 +56,18 @@ body {
         filter: invert(100%);
     }
 
-/* Dropdown de Categorias */
 .dropdown-menu {
-    background-color: #2563eb; /* Azul vibrante */
+    background-color: #2563eb;
     border: none;
     border-radius: 8px;
     padding: 8px 0;
     box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
     animation: fadeIn 0.3s;
+    position: relative;
 }
 
 .dropdown-item {
+    position: relative;
     color: white;
     padding: 10px 20px;
     transition: all 0.3s ease;
@@ -77,23 +78,13 @@ body {
     gap: 10px;
 }
 
-    .dropdown-item i {
-        font-size: 1.2rem;
-        color: #f59e0b;
-    }
-
     .dropdown-item:hover {
         background-color: rgba(255, 255, 255, 0.1);
-        color: white;
+        color: #f59e0b;
         font-weight: bold;
-        box-shadow: none;
     }
 
-        .dropdown-item:hover i {
-            color: white;
-        }
-
-/* Botão de Login */
+/* BotÃ£o de Login */
 .nav-link-login {
     display: flex;
     align-items: center;
@@ -124,7 +115,7 @@ body {
         width: 100%;
     }
 
-/* Botão do Carrinho */
+/* BotÃ£o do Carrinho */
 .nav-link-cart {
     color: white !important;
     position: relative;
@@ -185,7 +176,7 @@ footer {
             color: #ffdd57;
         }
 
-/* Animações */
+/* AnimaÃ§Ãµes */
 @keyframes fadeIn {
     from {
         opacity: 0;
@@ -239,6 +230,59 @@ footer {
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15) !important;
 }
 
+/* Submenu de Subcategorias */
+.dropdown-submenu {
+    position: relative;
+}
+
+    .dropdown-submenu .dropdown-menu {
+        top: 0;
+        left: 100%;
+        margin-top: -5px;
+        border-radius: 8px;
+        background-color: #1d4ed8; /* Mesma cor do menu principal */
+        transition: all 0.3s ease;
+        display: none; /* Iniciar escondido */
+        padding: 8px 0;
+        box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);
+        min-width: 200px;
+    }
+
+    .dropdown-submenu:hover > .dropdown-menu {
+        display: block; /* Exibe o submenu ao passar o mouse */
+    }
+
+    /* Removido o Ã­cone de seta â–¶ que estava causando o problema */
+    .dropdown-submenu > a::after {
+        content: none;
+    }
+
+.dropdown-menu .dropdown-item {
+    color: white;
+    padding: 10px 20px;
+    transition: all 0.3s ease;
+    border-radius: 5px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .dropdown-menu .dropdown-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        color: #f59e0b; /* Laranja moderno */
+    }
+
+    .dropdown-menu .dropdown-item i {
+        font-size: 1.2rem;
+        color: #f59e0b;
+    }
+
+    .dropdown-menu .dropdown-item:hover i {
+        color: white;
+    }
+
+
 /* Responsividade */
 @media (max-width: 768px) {
     .navbar-custom {
@@ -252,6 +296,17 @@ footer {
     .dropdown-menu {
         width: 100%;
         border-radius: 0;
+    }
+
+    .dropdown-submenu .dropdown-menu {
+        position: static;
+        margin: 0;
+        box-shadow: none;
+        border-radius: 0;
+    }
+
+    .dropdown-submenu > a::after {
+        content: "";
     }
 
     .dropdown-item {

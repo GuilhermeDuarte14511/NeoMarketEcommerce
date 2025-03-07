@@ -1,13 +1,17 @@
-﻿@model NeoMarket.Application.DTOs.StoreDto
+﻿@{
+    var storeName = Context.Session.GetString("StoreName") ?? "Nome da Loja";
+    var storeUrlSlug = Context.Session.GetString("StoreUrlSlug") ?? "#";
+    var categoriesJson = Context.Session.GetString("StoreCategories") ?? "[]";
+    var categories = System.Text.Json.JsonSerializer.Deserialize<List<NeoMarket.Application.DTOs.CategoryDto>>(categoriesJson) ?? new List<NeoMarket.Application.DTOs.CategoryDto>();
+    var carouselImagesJson = Context.Session.GetString("StoreCarouselImages") ?? "[]";
+    var carouselImages = System.Text.Json.JsonSerializer.Deserialize<List<NeoMarket.Application.DTOs.CarouselImageDto>>(carouselImagesJson) ?? new List<NeoMarket.Application.DTOs.CarouselImageDto>();
+}
 
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    @{
-        ViewData["Title"] = Model?.Name ?? "Teste";
-    }
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
@@ -21,6 +25,8 @@
     <!-- Biblioteca de animações -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet" />
 
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/NeoMarket.styles.css" asp-append-version="true" />
@@ -29,8 +35,8 @@
     <header>
         <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
             <div class="container-fluid">
-                <a class="navbar-brand" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@Model?.UrlSlug">
-                    <i class="fas fa-store"></i> @ViewData["Title"]
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@storeUrlSlug">
+                    <i class="fas fa-store"></i> @storeName
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Alternar navegação">
                     <span class="navbar-toggler-icon"></span>
@@ -38,7 +44,7 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@Model?.UrlSlug">
+                            <a class="nav-link" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@storeUrlSlug">
                                 <i class="fas fa-home"></i> Início
                             </a>
                         </li>
@@ -47,93 +53,50 @@
                                 <i class="fas fa-th-list"></i> Categorias
                             </a>
                             <ul class="dropdown-menu shadow-lg" aria-labelledby="dropdownCategorias">
-                                @foreach (var categoria in Model?.Categories ?? new List<string>())
+                                @foreach (var categoria in categories)
                                 {
-                                    <li>
-                                        <a class="dropdown-item d-flex align-items-center" asp-controller="Category" asp-action="Index" asp-route-id="@categoria">
-                                            <i class="fas fa-angle-right me-2"></i>@categoria
+                                    <li class="dropdown-submenu">
+                                        <a class="dropdown-item dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            <i class="fas fa-angle-right me-2"></i> @categoria.Name
                                         </a>
+                                        <ul class="dropdown-menu">
+                                            @foreach (var subcategoria in categoria.Subcategories)
+                                            {
+                                                <li>
+                                                    <a class="dropdown-item d-flex align-items-center"
+                                                       asp-controller="Product"
+                                                       asp-action="Index"
+                                                       asp-route-subCategorySlug="@subcategoria.UrlSlug">
+                                                        <i class="fas fa-caret-right me-2"></i>@subcategoria.Name
+                                                    </a>
+                                                </li>
+                                            }
+                                        </ul>
                                     </li>
                                 }
                             </ul>
                         </li>
-                    </ul>
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index">
-                                <i class="fas fa-shopping-cart"></i> Carrinho
-                                <span class="badge bg-warning text-dark position-absolute top-0 start-100 translate-middle p-1 rounded-circle">
-                                    3
-                                </span>
-                            </a>
-                        </li>
-
-                        @if (User.Identity.IsAuthenticated)
-                        {
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle" href="#" id="perfilDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user"></i> Olá, @User.Identity.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end shadow-lg">
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Order" asp-action="Index">
-                                            <i class="fas fa-box"></i> Meus Pedidos
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="User" asp-action="Profile">
-                                            <i class="fas fa-user-cog"></i> Alterar Dados
-                                        </a>
-                                    </li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <a class="dropdown-item" asp-controller="Auth" asp-action="Logout">
-                                            <i class="fas fa-sign-out-alt"></i> Sair
-                                        </a>
-                                    </li>
-                                </ul>
-                            </li>
-                        }
-                        else
-                        {
-                            <li class="nav-item">
-                                <a class="nav-link nav-link-login" asp-controller="Auth" asp-action="Login">
-                                    <i class="fas fa-user"></i> Fazer Login
-                                </a>
-                            </li>
-                        }
                     </ul>
                 </div>
             </div>
         </nav>
     </header>
 
-    <!-- Carrossel Dinâmico -->
-    <div id="bannerCarousel" class="carousel slide mb-4" data-bs-ride="carousel">
+    <!-- Carousel de Imagens -->
+    <div id="storeCarousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
-            @if (Model?.CarouselImages != null && Model.CarouselImages.Any())
+            @foreach (var image in carouselImages)
             {
-                int index = 0;
-                foreach (var image in Model.CarouselImages)
-                {
-                    <div class="carousel-item @(index == 0 ? "active" : "")">
-                        <img src="@image.ImageUrl" class="d-block w-100" alt="@image.AltText">
-                    </div>
-                    index++;
-                }
-            }
-            else
-            {
-                <div class="carousel-item active">
-                    <img src="https://via.placeholder.com/1500x500" class="d-block w-100" alt="Imagem Padrão">
+                <div class="carousel-item @(image == carouselImages.First() ? "active" : "")">
+                    <img src="@image.ImageUrl" class="d-block w-100" alt="@image.AltText" style="object-fit: cover; height: 300px; border-radius: 10px; box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);">
                 </div>
             }
         </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#bannerCarousel" data-bs-slide="prev">
+        <button class="carousel-control-prev" type="button" data-bs-target="#storeCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Anterior</span>
         </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#bannerCarousel" data-bs-slide="next">
+        <button class="carousel-control-next" type="button" data-bs-target="#storeCarousel" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Próximo</span>
         </button>
@@ -158,7 +121,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/wow/1.1.2/wow.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
-
     <script src="~/js/site.js" asp-append-version="true"></script>
 
     @await RenderSectionAsync("Scripts", required: false)

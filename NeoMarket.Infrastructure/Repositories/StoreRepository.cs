@@ -19,6 +19,8 @@ namespace NeoMarket.Infrastructure.Repositories
             return _context.Stores
                 .Include(s => s.Products)
                     .ThenInclude(p => p.Category)
+                .Include(s => s.Products)
+                    .ThenInclude(p => p.Subcategory)
                 .Include(s => s.CarouselImages)
                 .FirstOrDefault(s => s.UrlSlug == urlSlug);
         }
