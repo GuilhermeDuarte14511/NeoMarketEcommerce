@@ -282,6 +282,133 @@ footer {
         color: white;
     }
 
+/* Estilo do Carrinho de Compras */
+.table th,
+.table td {
+    border-top: none;
+    vertical-align: middle;
+}
+
+.product-info img {
+    max-width: 100px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.quantity-control .btn {
+    min-width: 30px;
+    height: 30px;
+    padding: 0;
+}
+
+.quantity-control input {
+    width: 50px;
+    text-align: center;
+    border: none;
+    background-color: #f3f4f6;
+}
+
+    .quantity-control input:focus {
+        outline: none;
+    }
+
+.text-muted {
+    font-size: 0.9rem;
+}
+
+/* Resumo do Pedido */
+.summary-card {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+    .summary-card h3,
+    .summary-card h4 {
+        font-weight: bold;
+    }
+
+    .summary-card p {
+        margin: 0;
+    }
+
+.btn-continue {
+    background-color: #e60014;
+    border-color: #e60014;
+    box-shadow: 0 4px 8px rgba(230, 0, 20, 0.4);
+    transition: background-color 0.3s;
+}
+
+    .btn-continue:hover {
+        background-color: #cc0012;
+    }
+
+/* Input de CEP */
+#cepInput {
+    max-width: 200px;
+    border-radius: 5px;
+    margin-right: 15px; /* Adiciona mais espaçamento à direita do input */
+}
+
+#calculateShippingButton {
+    border-radius: 50px;
+    font-weight: bold;
+    margin-left: 15px; /* Garante que o botão não grude no input */
+}
+
+#addressContainer {
+    font-size: 0.9rem;
+    background-color: #f8f9fa;
+    border-left: 4px solid #1d4ed8;
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+#addressText {
+    color: #333;
+    margin-left: 5px;
+}
+
+#freightOptions {
+    margin-top: 10px;
+}
+
+
+/* Botão de Remover Item */
+.text-danger {
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+    .text-danger:hover {
+        color: #e60014;
+        text-decoration: underline;
+    }
+
+/* Efeito de Hover */
+.nav-link {
+    position: relative;
+    padding: 0.5rem 1rem;
+    transition: all 0.3s;
+}
+
+    .nav-link::after {
+        content: '';
+        display: block;
+        width: 0;
+        height: 2px;
+        background: #f59e0b;
+        transition: width 0.3s;
+    }
+
+    .nav-link:hover::after {
+        width: 100%;
+    }
+
+
 
 /* Responsividade */
 @media (max-width: 768px) {

@@ -25,7 +25,7 @@ namespace NeoMarket.Infrastructure.Repositories
                 .ToList();
         }
 
-        public IEnumerable<Product> GetFilteredProducts(string subCategorySlug, List<string> brands, decimal? minPrice, decimal? maxPrice, int? minRating)
+        public IEnumerable<Product> GetFilteredProducts(string subCategorySlug, List<string> brands, decimal? minPrice, decimal? maxPrice, int? minRating, string sortBy)
         {
             var query = _context.Products
                 .Include(p => p.Subcategory)
@@ -44,7 +44,7 @@ namespace NeoMarket.Infrastructure.Repositories
                 query = query.Where(p => p.Price >= minPrice.Value);
             }
 
-            if (maxPrice.HasValue)
+            if (maxPrice.HasValue && maxPrice.Value > 0)
             {
                 query = query.Where(p => p.Price <= maxPrice.Value);
             }
@@ -54,7 +54,38 @@ namespace NeoMarket.Infrastructure.Repositories
                 query = query.Where(p => p.Reviews.Any() && p.Reviews.Average(r => r.Rating) >= minRating.Value);
             }
 
+            switch (sortBy)
+            {
+                case "priceAsc":
+                    query = query.OrderBy(p => p.Price);
+                    break;
+                case "priceDesc":
+                    query = query.OrderByDescending(p => p.Price);
+                    break;
+                case "bestRated":
+                    query = query.OrderByDescending(p => p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0);
+                    break;
+                case "newest":
+                    query = query.OrderByDescending(p => p.CreatedAt);
+                    break;
+                default:
+                    query = query.OrderBy(p => p.Name);
+                    break;
+            }
+
             return query.ToList();
         }
+
+        public Product GetProductById(int productId)
+        {
+            return _context.Products
+                .Include(p => p.Subcategory)
+                .Include(p => p.Category)
+                .Include(p => p.Brand)
+                .Include(p => p.Reviews)
+                .FirstOrDefault(p => p.Id == productId && p.IsActive);
+        }
+
+
     }
 }

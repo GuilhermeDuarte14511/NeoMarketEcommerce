@@ -18,12 +18,17 @@ namespace NeoMarket.Infrastructure.DependencyInjection
             services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
 
+            // Serviços da aplicação
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IProductService, ProductService>();
+            services.AddScoped<ICartService, CartService>();
 
+            // Repositórios
             services.AddScoped<IStoreRepository, StoreRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
+            services.AddScoped<ICartRepository, CartRepository>();
 
+            // Repositório genérico
             services.AddScoped<IRepository<Store>, StoreRepository>();
             services.AddScoped<IRepository<Product>, Repository<Product>>();
 

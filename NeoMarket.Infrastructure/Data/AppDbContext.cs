@@ -151,11 +151,18 @@ namespace NeoMarket.Infrastructure.Data
              .OnDelete(DeleteBehavior.SetNull);
 
 
-
             modelBuilder.Entity<Product>()
             .HasMany(p => p.Reviews)
             .WithOne(r => r.Product)
             .HasForeignKey(r => r.ProductId);
+
+            modelBuilder.Entity<Product>(entity =>
+            {
+                entity.Property(p => p.Weight).HasColumnType("decimal(10,2)");
+                entity.Property(p => p.Width).HasColumnType("decimal(10,2)");
+                entity.Property(p => p.Height).HasColumnType("decimal(10,2)");
+                entity.Property(p => p.Length).HasColumnType("decimal(10,2)");
+            });
         }
 
 

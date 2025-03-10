@@ -7,5 +7,6 @@
         public decimal? MinPrice { get; set; }
         public decimal? MaxPrice { get; set; }
         public int? MinRating { get; set; }
+        public string SortBy { get; set; } = "relevance";
     }
 }

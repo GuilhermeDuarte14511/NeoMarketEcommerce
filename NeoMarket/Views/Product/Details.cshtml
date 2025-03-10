@@ -1,0 +1,108 @@
+﻿@model NeoMarket.Application.DTOs.ProductDto
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div id="detailsProductPage" class="container my-5">
+    <div class="row">
+        <!-- Imagem do Produto e Seções abaixo -->
+        <div class="col-md-6 d-flex flex-column justify-content-start align-items-center">
+            <!-- Imagem do Produto -->
+            <div class="card shadow-sm p-3 mb-4" style="max-width: 400px; border: 1px solid #ddd; border-radius: 8px;">
+                <img src="@Model.ImageUrl" class="card-img-top rounded img-fluid" alt="@Model.Name" style="max-height: 400px; object-fit: contain;">
+            </div>
+
+            <!-- Descrição do Produto -->
+            <div class="accordion mb-4 w-100" id="descriptionAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="descriptionHeading">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#descriptionCollapse" aria-expanded="true" aria-controls="descriptionCollapse">
+                            Descrição do Produto
+                        </button>
+                    </h2>
+                    <div id="descriptionCollapse" class="accordion-collapse collapse show" aria-labelledby="descriptionHeading" data-bs-parent="#descriptionAccordion">
+                        <div class="accordion-body">
+                            @Model.Description
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avaliações do Produto -->
+            <div class="accordion w-100" id="reviewsAccordion">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="reviewsHeading">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#reviewsCollapse" aria-expanded="true" aria-controls="reviewsCollapse">
+                            Avaliações (@Model.Reviews.Count)
+                        </button>
+                    </h2>
+                    <div id="reviewsCollapse" class="accordion-collapse collapse show" aria-labelledby="reviewsHeading" data-bs-parent="#reviewsAccordion">
+                        <div class="accordion-body">
+                            @if (Model.Reviews.Any())
+                            {
+                                @foreach (var review in Model.Reviews)
+                                {
+                                    <div class="border rounded p-3 mb-3 shadow-sm">
+                                        <div class="d-flex align-items-center mb-2">
+                                            <div class="text-warning me-2">
+                                                @for (int i = 1; i <= 5; i++)
+                                                {
+                                                    if (i <= review.Rating)
+                                                    {
+                                                        <i class="bi bi-star-fill"></i>
+                                                    }
+                                                    else
+                                                    {
+                                                        <i class="bi bi-star"></i>
+                                                    }
+                                                }
+                                            </div>
+                                            <small class="text-muted">Publicado em @review.CreatedAt.ToString("dd/MM/yyyy")</small>
+                                        </div>
+                                        <p>@review.Comment</p>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-muted">Este produto ainda não possui avaliações.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações do Produto -->
+        <div class="col-md-6">
+            <h1 class="display-4">@Model.Name</h1>
+            <h4 class="text-muted">@Model.Brand</h4>
+
+            <div class="my-3">
+                <span class="fs-2 text-primary fw-bold">@Model.Price.ToString("C")</span>
+            </div>
+            <!-- Botão Adicionar ao Carrinho -->
+            <div class="mb-4">
+                <button class="btn btn-success btn-lg w-100 mb-3" id="addToCartButton" data-product-id="@Model.Id">
+                    <i class="bi bi-cart-plus"></i> Adicionar ao Carrinho
+                </button>
+            </div>
+
+            <!-- Input para Cálculo de Frete -->
+            <div class="mb-4">
+                <h6>Cálculo de Frete</h6>
+                <div class="input-group">
+                    <input type="text" class="form-control" placeholder="Digite seu CEP" id="cepInput" maxlength="9" pattern="\d{5}-\d{3}">
+                    <button class="btn btn-primary" id="calculateShippingButton" data-product-id="@Model.Id">
+                        Calcular Frete
+                    </button>
+                </div>
+                <small class="text-muted">Informe seu CEP no formato <strong>00000-000</strong> para saber o valor e prazo de entrega.</small>
+            </div>
+
+            <!-- Área para exibição das opções de frete -->
+            <div id="shippingOptions" class="mt-4"></div>
+        </div>
+    </div>
+</div>

@@ -31,20 +31,6 @@ toastr.options = {
     hideMethod: "fadeOut"
 };
 
-// 🔵 Exibe mensagens de sucesso e erro do TempData
-$(document).ready(function () {
-    var successMessage = '@TempData["SuccessMessage"]';
-    var errorMessage = '@TempData["ErrorMessage"]';
-
-    if (successMessage) {
-        showToast('success', successMessage);
-    }
-
-    if (errorMessage) {
-        showToast('error', errorMessage);
-    }
-});
-
 // 🟠 Inicializa animações WOW.js
 new WOW().init();
 
@@ -86,6 +72,7 @@ if (ListProductPage) {
     // Obter os elementos de input de preço mínimo e máximo
     var minPriceInput = document.getElementById('minPrice');
     var maxPriceInput = document.getElementById('maxPrice');
+    var sortBySelect = document.getElementById('sortBy');
 
     // Evento de clique no botão de aplicar filtros
     document.getElementById('applyFiltersButton').addEventListener('click', function () {
@@ -99,11 +86,12 @@ if (ListProductPage) {
 
         var minPrice = parseFloat(minPriceInput.value) || 0;
         var maxPrice = parseFloat(maxPriceInput.value) || 0;
+        var sortBy = sortBySelect.value;
 
         var subCategorySlug = window.location.pathname.split("/").pop();
 
         // Validação dos preços
-        if (minPrice > maxPrice) {
+        if (minPrice > maxPrice && maxPrice > 0) {
             showToast('error', 'O preço mínimo não pode ser maior que o preço máximo.');
             return;
         }
@@ -111,9 +99,10 @@ if (ListProductPage) {
         var filterRequest = {
             SubCategorySlug: subCategorySlug,
             Brands: selectedBrands,
-            MaxPrice: maxPrice,
-            MinPrice: minPrice,
-            MinRating: selectedRatings.length > 0 ? Math.max(...selectedRatings) : null
+            MaxPrice: maxPrice > 0 ? maxPrice : null,
+            MinPrice: minPrice > 0 ? minPrice : null,
+            MinRating: selectedRatings.length > 0 ? Math.max(...selectedRatings) : null,
+            SortBy: sortBy
         };
 
         fetch('/Product/GetFilteredProducts', {
@@ -193,5 +182,263 @@ if (ListProductPage) {
     // Função para formatar o preço no padrão brasileiro
     function formatCurrency(value) {
         return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+}
+
+var detailsProductPage = document.getElementById('detailsProductPage');
+if (detailsProductPage) {
+
+    // Aplicar máscara de CEP e validar o formato
+    document.getElementById('cepInput').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+        if (value.length > 8) {
+            value = value.substring(0, 8); // Limita a 8 dígitos numéricos
+        }
+
+        if (value.length > 5) {
+            value = value.replace(/^(\d{5})(\d{1,3})$/, '$1-$2'); // Formato 00000-000
+        }
+
+        e.target.value = value;
+    });
+
+    // Cálculo de Frete
+    document.getElementById('calculateShippingButton').addEventListener('click', function () {
+        const cep = document.getElementById('cepInput').value.trim();
+        const productId = this.getAttribute('data-product-id');
+
+        // Validação para apenas o formato correto de CEP (00000-000)
+        const cepPattern = /^\d{5}-\d{3}$/;
+        if (!cepPattern.test(cep)) {
+            showToast('error', 'Por favor, insira um CEP válido no formato 00000-000.');
+            return;
+        }
+
+        fetch(`/Product/CalculateShipping?productId=${productId}&cep=${cep}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro ao calcular o frete.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const shippingOptions = document.getElementById('shippingOptions');
+                shippingOptions.innerHTML = '<h6>Opções de Frete:</h6>';
+
+                if (data.length > 0) {
+                    data.forEach(option => {
+                        if (!option.error) {
+                            let optionHTML = `
+                                <div class="card p-3 mb-2 shadow-sm d-flex flex-row align-items-center">
+                                    <div class="me-3">
+                                        <img src="${option.company?.picture}" alt="${option.company?.name}" class="img-fluid" style="width: 50px; height: 50px;">
+                                    </div>
+                                    <div>
+                                        <h5 class="mb-1">${option.name}</h5>
+                                        <p class="mb-1">Preço: <strong>${option.price ? parseFloat(option.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }) : 'R$ 0,00'}</strong></p>
+                                        <p class="mb-1">Prazo de entrega: <strong>${option.delivery_time ? option.delivery_time + ' dias úteis' : 'Indisponível'}</strong></p>
+                                        <p class="mb-1">Intervalo de entrega: <strong>${option.delivery_range ? option.delivery_range.min + ' a ' + option.delivery_range.max + ' dias úteis' : 'Indisponível'}</strong></p>
+                                    </div>
+                                </div>
+                            `;
+                            shippingOptions.innerHTML += optionHTML;
+                        }
+                    });
+
+                    showToast('success', 'Cálculo de frete realizado com sucesso!');
+                } else {
+                    shippingOptions.innerHTML = '<p class="text-danger">Nenhuma opção de frete disponível.</p>';
+                    showToast('error', 'Nenhuma opção de frete encontrada.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao calcular frete:', error);
+                showToast('error', 'Ocorreu um erro ao calcular o frete. Tente novamente mais tarde.');
+            });
+    });
+
+    // Adicionar ao Carrinho
+    document.getElementById('addToCartButton').addEventListener('click', function () {
+        const productId = this.getAttribute('data-product-id');
+        const quantity = 1;
+
+        fetch('/Cart/AddToCart', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: `productId=${productId}&quantity=${quantity}`
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    updateCartItemCount(data.itemCount);
+                    showToast('success', 'Produto adicionado ao carrinho!');
+                } else {
+                    showToast('error', 'Falha ao adicionar produto ao carrinho.');
+                }
+            })
+            .catch(error => {
+                console.error('Erro ao adicionar produto ao carrinho:', error);
+                showToast('error', 'Ocorreu um erro ao adicionar o produto ao carrinho.');
+            });
+    });
+
+    // Função para atualizar o contador de itens no carrinho
+    function updateCartItemCount(count) {
+        const cartItemCount = document.getElementById('cartItemCount');
+        if (cartItemCount) {
+            cartItemCount.textContent = count;
+        }
+    }
+
+}
+
+// Variável para identificar a página do carrinho
+var CartItemsDetailsPage = document.getElementById('CartItemsDetailsPage');
+
+if (CartItemsDetailsPage) {
+
+    // Aplicar máscara de CEP e validação de formato
+    document.getElementById('cepInput').addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+        if (value.length > 8) {
+            value = value.substring(0, 8); // Limita a 8 dígitos numéricos
+        }
+
+        if (value.length > 5) {
+            value = value.replace(/^(\d{5})(\d{1,3})$/, '$1-$2'); // Formato 00000-000
+        }
+
+        e.target.value = value;
+    });
+
+    // Calcular o frete ao clicar no botão
+    document.getElementById('calculateShippingButton').addEventListener('click', function () {
+        const cep = document.getElementById('cepInput').value.trim();
+        const productIds = this.getAttribute('data-product-ids').split(',');
+
+        const cepPattern = /^\d{5}-\d{3}$/;
+        if (!cepPattern.test(cep)) {
+            showToast('error', 'Por favor, insira um CEP válido no formato 00000-000.');
+            return;
+        }
+
+        $('#freightOptionsContainer').html('Carregando opções de frete...');
+
+        // Primeiro: Calcula o frete
+        productIds.forEach(productId => {
+            fetch(`/Cart/CalculateShipping?productId=${productId}&cep=${cep}`)
+                .then(response => response.json())
+                .then(data => {
+                    let optionsHtml = '<h6>Opções de Frete:</h6>';
+                    let hasValidOptions = false;
+
+                    data.forEach(option => {
+                        if (option.price && !option.error) {
+                            hasValidOptions = true;
+                            optionsHtml += `
+                                <div class="form-check">
+                                    <input class="form-check-input shipping-option" type="radio" 
+                                           name="shippingOption" value="${option.price}" 
+                                           data-delivery="${option.delivery_time}" 
+                                           id="shipping-${option.name}">
+                                    <label class="form-check-label" for="shipping-${option.name}">
+                                        ${option.name} - ${parseFloat(option.price).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })} 
+                                        (${option.delivery_time} dias úteis)
+                                    </label>
+                                </div>`;
+                        }
+                    });
+
+                    if (!hasValidOptions) {
+                        optionsHtml += '<p class="text-danger">Nenhuma opção de frete disponível.</p>';
+                    }
+
+                    $('#freightOptionsContainer').html(optionsHtml);
+
+                    document.querySelectorAll('.shipping-option').forEach(option => {
+                        option.addEventListener('change', updateTotalPrice);
+                    });
+
+                    showToast('success', 'Opções de frete carregadas com sucesso!');
+
+                    // Segundo: Busca o endereço via API ViaCEP
+                    fetch(`https://viacep.com.br/ws/${cep}/json/`)
+                        .then(response => response.json())
+                        .then(addressData => {
+                            if (addressData.erro) {
+                                showToast('error', 'CEP não encontrado. Verifique o CEP e tente novamente.');
+                                return;
+                            }
+
+                            const fullAddress = `${addressData.logradouro || 'Rua não disponível'}, ${addressData.bairro || 'Bairro não disponível'}, ${addressData.localidade} - ${addressData.uf}`;
+
+                            const addressElement = document.getElementById('addressText');
+                            const addressInfoElement = document.getElementById('addressContainer');
+
+                            if (addressElement && addressInfoElement) {
+                                addressElement.innerText = fullAddress;
+                                addressInfoElement.classList.remove('d-none');
+                            } else {
+                                console.warn('Elemento de endereço não encontrado no DOM.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Erro ao buscar informações do CEP:', error);
+                            showToast('error', 'Erro ao buscar informações do CEP.');
+                        });
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar opções de frete:', error);
+                    $('#freightOptionsContainer').html('<p class="text-danger">Erro ao buscar opções de frete.</p>');
+                    showToast('error', 'Erro ao carregar as opções de frete.');
+                });
+        });
+    });
+
+    // Atualiza o preço total ao selecionar uma opção de frete
+    function updateTotalPrice() {
+        const selectedOption = document.querySelector('input[name="shippingOption"]:checked');
+        const shippingCost = selectedOption ? parseFloat(selectedOption.value) : 0;
+        const productTotal = parseFloat(document.getElementById('totalPrice').dataset.productTotal);
+        const totalPrice = productTotal + shippingCost;
+
+        document.getElementById('shippingCost').innerText = shippingCost.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        document.getElementById('totalPrice').innerText = totalPrice.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    // Atualiza a quantidade de um item no carrinho
+    function updateQuantity(productId, change) {
+        $.post('/Cart/AddToCart', { productId: productId, quantity: change }, function (data) {
+            if (data.success) {
+                location.reload();
+            } else {
+                showToast('error', 'Não foi possível atualizar o carrinho.');
+            }
+        });
+    }
+
+    // Remove um item do carrinho
+    function removeFromCart(productId) {
+        $.post('/Cart/RemoveFromCart', { productId: productId }, function (data) {
+            if (data.success) {
+                updateCartItemCount(data.itemCount);
+                location.reload();
+            } else {
+                showToast('error', 'Não foi possível remover o item do carrinho.');
+            }
+        });
+    }
+
+    // Atualiza o contador de itens no carrinho e salva no cookie
+    function updateCartItemCount(count) {
+        const cartItemCount = document.getElementById('cartItemCount');
+        if (cartItemCount) {
+            cartItemCount.textContent = count;
+        }
+        document.cookie = `CartItemCount=${count}; path=/; max-age=604800`; // 7 dias
     }
 }

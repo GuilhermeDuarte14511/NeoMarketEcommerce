@@ -1,5 +1,6 @@
 using NeoMarket.Infrastructure.DependencyInjection;
-using NeoMarket.Filters; // Certifique-se de importar o filtro personalizado
+using NeoMarket.Filters;
+using NeoMarket.Infrastructure.Converters; // Certifique-se de importar o filtro personalizado
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,9 @@ builder.Services.AddControllersWithViews(options =>
 // Adiciona os serviços de aplicação usando a extensão criada
 builder.Services.AddApplicationServices(builder.Configuration);
 
+// Adiciona o HttpClient para o serviço Melhor Envio
+builder.Services.AddMelhorEnvioHttpClient(builder.Configuration);
+
 // Registrar o IHttpContextAccessor e o IStoreService para o filtro
 builder.Services.AddHttpContextAccessor();
 
@@ -31,6 +35,7 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

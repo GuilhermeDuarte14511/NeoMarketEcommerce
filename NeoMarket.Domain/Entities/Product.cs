@@ -1,4 +1,6 @@
-﻿using NeoMarket.Domain.Entities;
+﻿using System;
+using System.Collections.Generic;
+using NeoMarket.Domain.Entities;
 
 public class Product
 {
@@ -9,7 +11,10 @@ public class Product
     public int StockQuantity { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; }
-
+    public decimal Weight { get; set; }
+    public decimal Width { get; set; }
+    public decimal Height { get; set; }
+    public decimal Length { get; set; }
     public int StoreId { get; set; }
     public int CategoryId { get; set; }
     public int? SubcategoryId { get; set; }
@@ -21,5 +26,4 @@ public class Product
     public Subcategory Subcategory { get; set; }
     public Brand Brand { get; set; }
     public ICollection<Review> Reviews { get; set; } = new List<Review>();
-
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Http;
 using NeoMarket.Application.DTOs;
 using NeoMarket.Application.Interfaces;
+using NeoMarket.Domain.Entities;
 using System.Text.Json;
 
 namespace NeoMarket.Filters
@@ -10,11 +11,13 @@ namespace NeoMarket.Filters
     public class StoreDataFilter : IActionFilter
     {
         private readonly IStoreService _storeService;
+        private readonly ICartService _cartService;
         private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public StoreDataFilter(IStoreService storeService, IHttpContextAccessor httpContextAccessor)
+        public StoreDataFilter(IStoreService storeService, ICartService cartService, IHttpContextAccessor httpContextAccessor)
         {
             _storeService = storeService;
+            _cartService = cartService;
             _httpContextAccessor = httpContextAccessor;
         }
 
@@ -59,9 +62,32 @@ namespace NeoMarket.Filters
                         httpContext.Session.SetString("StoreCarouselImages", carouselImagesJson);
                     }
                 }
+
+                // Lógica do Carrinho
+                int cartItemCount = 0;
+                var userId = httpContext.Session.GetInt32("UserId");
+
+                if (userId.HasValue)
+                {
+                    // Usuário logado: busca o carrinho do banco de dados
+                    var cart = _cartService.GetCartByUserId(userId.Value);
+                    cartItemCount = cart?.Items.Sum(item => item.Quantity) ?? 0;
+                }
+                else
+                {
+                    // Usuário não autenticado: busca os itens do carrinho na sessão (cookies)
+                    var cookieCart = httpContext.Request.Cookies["CartItems"];
+                    if (!string.IsNullOrEmpty(cookieCart))
+                    {
+                        var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cookieCart);
+                        cartItemCount = cartItems?.Sum(item => item.Quantity) ?? 0;
+                    }
+                }
+
+                // Define o contador de itens do carrinho na sessão
+                httpContext.Session.SetInt32("CartItemCount", cartItemCount);
             }
         }
-
 
         public void OnActionExecuted(ActionExecutedContext context)
         {

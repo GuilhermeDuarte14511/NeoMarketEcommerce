@@ -5,6 +5,8 @@
     var categories = System.Text.Json.JsonSerializer.Deserialize<List<NeoMarket.Application.DTOs.CategoryDto>>(categoriesJson) ?? new List<NeoMarket.Application.DTOs.CategoryDto>();
     var carouselImagesJson = Context.Session.GetString("StoreCarouselImages") ?? "[]";
     var carouselImages = System.Text.Json.JsonSerializer.Deserialize<List<NeoMarket.Application.DTOs.CarouselImageDto>>(carouselImagesJson) ?? new List<NeoMarket.Application.DTOs.CarouselImageDto>();
+    var cartItemCount = Context.Session.GetInt32("CartItemCount") ?? 0;
+    var isAuthenticated = Context.Session.GetInt32("UserId").HasValue;
 }
 
 <!DOCTYPE html>
@@ -77,30 +79,41 @@
                             </ul>
                         </li>
                     </ul>
+
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item position-relative me-3">
+                            <a class="nav-link" href='@Url.Action("Details", "Cart")' title="Carrinho de Compras">
+                                <i class="bi bi-cart-fill" style="font-size: 1.8rem;"></i>
+                                <span id="cartItemCount" class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                                    @cartItemCount
+                                </span>
+                            </a>
+                        </li>
+                        <!-- Ícone do Perfil e Login -->
+                        @if (isAuthenticated)
+                        {
+                            <li class="nav-item me-3">
+                                <a class="nav-link" href="@Url.Action("Profile", "Account")" title="Perfil">
+                                    <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
+                                </a>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item me-3 d-flex align-items-center">
+                                <a class="nav-link" href="@Url.Action("Login", "Account")" title="Fazer Login">
+                                    <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
+                                </a>
+                                <a class="btn btn-outline-primary ms-2" href="@Url.Action("Login", "Account")">
+                                    Fazer Login
+                                </a>
+                            </li>
+                        }
+                    </ul>
                 </div>
             </div>
         </nav>
     </header>
-
-    <!-- Carousel de Imagens -->
-    <div id="storeCarousel" class="carousel slide" data-bs-ride="carousel">
-        <div class="carousel-inner">
-            @foreach (var image in carouselImages)
-            {
-                <div class="carousel-item @(image == carouselImages.First() ? "active" : "")">
-                    <img src="@image.ImageUrl" class="d-block w-100" alt="@image.AltText" style="object-fit: cover; height: 300px; border-radius: 10px; box-shadow: 0px 8px 16px rgba(0, 0, 0, 0.1);">
-                </div>
-            }
-        </div>
-        <button class="carousel-control-prev" type="button" data-bs-target="#storeCarousel" data-bs-slide="prev">
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Anterior</span>
-        </button>
-        <button class="carousel-control-next" type="button" data-bs-target="#storeCarousel" data-bs-slide="next">
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Próximo</span>
-        </button>
-    </div>
 
     <div class="container mt-4">
         <main role="main" class="pb-3">

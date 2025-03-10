@@ -31,9 +31,9 @@ namespace NeoMarket.Application.Services
             }).ToList();
         }
 
-        public IEnumerable<ProductDto> GetFilteredProducts(string subCategorySlug, List<string> brands, decimal? minPrice, decimal? maxPrice, int? minRating)
+        public IEnumerable<ProductDto> GetFilteredProducts(string subCategorySlug, List<string> brands, decimal? minPrice, decimal? maxPrice, int? minRating, string sortBy)
         {
-            var products = _productRepository.GetFilteredProducts(subCategorySlug, brands, minPrice, maxPrice, minRating);
+            var products = _productRepository.GetFilteredProducts(subCategorySlug, brands, minPrice, maxPrice, minRating, sortBy);
 
             return products.Select(p => new ProductDto
             {
@@ -48,6 +48,38 @@ namespace NeoMarket.Application.Services
                 Rating = p.Reviews.Any() ? p.Reviews.Average(r => r.Rating) : 0
             }).ToList();
         }
+
+        public ProductDto GetProductById(int productId)
+        {
+            var product = _productRepository.GetProductById(productId);
+
+            if (product == null) return null;
+
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                ImageUrl = product.ImageUrl,
+                SubcategoryName = product.Subcategory?.Name,
+                CategoryName = product.Category?.Name,
+                Brand = product.Brand?.Name,
+                Rating = product.Reviews.Any() ? product.Reviews.Average(r => r.Rating) : 0,
+                Weight = product.Weight,
+                Width = product.Width,
+                Height = product.Height,
+                Length = product.Length,
+                Reviews = product.Reviews.Select(r => new ReviewDto
+                {
+                    Rating = r.Rating,
+                    Comment = r.Comment,
+                    CreatedAt = r.CreatedAt
+                }).ToList()
+            };
+        }
+
+
 
     }
 }

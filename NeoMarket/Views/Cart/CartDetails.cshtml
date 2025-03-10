@@ -1,0 +1,109 @@
+﻿@model IEnumerable<NeoMarket.Application.DTOs.Cart.CartProductDto>
+
+<div id="CartItemsDetailsPage" class="container my-5">
+    <div class="row">
+        <!-- Seção da Cesta de Compras -->
+        <div class="col-md-8">
+            <h2 class="mb-4">minha cesta</h2>
+
+            @if (!Model.Any())
+            {
+                <div class="text-center p-5 bg-light rounded shadow-sm">
+                    <i class="bi bi-cart-x display-1 text-muted"></i>
+                    <h4 class="mt-3 text-muted">Seu carrinho está vazio</h4>
+                    <p class="text-muted">Adicione produtos ao carrinho para vê-los aqui.</p>
+                    <a href="@Url.Action("Index", "Product")" class="btn btn-primary mt-3">
+                        Continuar comprando
+                    </a>
+                </div>
+            }
+            else
+            {
+                <table class="table border-0">
+                    <thead>
+                        <tr>
+                            <th class="text-muted">produto</th>
+                            <th class="text-muted text-center">qtd.</th>
+                            <th class="text-muted text-center">entrega</th>
+                            <th class="text-muted text-end">preço</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="align-items-center">
+                                <td class="product-info">
+                                    <div class="d-flex align-items-center shadow-sm p-3 rounded mb-3 bg-white">
+                                        <img src="@item.ImageUrl" class="img-fluid rounded me-3" style="width: 100px; height: 100px;" alt="@item.Name" />
+                                        <div>
+                                            <h5 class="mb-1">@item.Name</h5>
+                                            <p class="text-muted small">vendido e entregue por NeoMarket</p>
+                                            <a href="javascript:void(0);" class="text-danger" onclick="removeFromCart(@item.ProductId)">remover</a>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center">
+                                    <div class="input-group quantity-control">
+                                        <button class="btn btn-outline-secondary" onclick="updateQuantity(@item.ProductId, -1)">-</button>
+                                        <input type="text" class="form-control text-center" value="@item.Quantity" readonly />
+                                        <button class="btn btn-outline-secondary" onclick="updateQuantity(@item.ProductId, 1)">+</button>
+                                    </div>
+                                </td>
+                                <td class="text-center">-</td>
+                                <td class="text-end">
+                                    <span class="fw-bold">@item.Price.ToString("C")</span>
+                                    <br><small class="text-muted">em 1x no cartão</small>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+                <!-- Cálculo de Frete -->
+                <div class="mt-4 d-flex align-items-center">
+                    <input type="text" class="form-control w-25" placeholder="calcule frete e prazo" id="cepInput" maxlength="9" pattern="\d{5}-\d{3}">
+                    <button class="btn btn-outline-danger ms-3" id="calculateShippingButton" data-product-ids="@string.Join(",", Model.Select(p => p.ProductId))">ok</button>
+                    <span class="text-muted ms-3">não sei meu cep</span>
+                </div>
+
+                <!-- Endereço e Opções de Frete -->
+                <div id="shippingContainer" class="mt-4">
+                    <div id="addressContainer" class="bg-light p-2 rounded shadow-sm mb-3 d-none">
+                        <span><strong>Endereço:</strong> <span id="addressText"></span></span>
+                    </div>
+                    <div id="freightOptionsContainer" class="mt-2"></div>
+                </div>
+
+            }
+        </div>
+
+        <!-- Resumo do Pedido -->
+        <div class="col-md-4">
+            <div class="bg-light p-4 rounded shadow-sm">
+                <h3 class="mb-4">resumo do pedido</h3>
+
+                <p class="text-muted mb-2">@Model.Count() produto(s)</p>
+                <p class="text-muted">frete: <span id="shippingCost">-</span></p>
+
+                <hr>
+
+                <h4 class="mb-3">
+                    total
+                    <span class="float-end"
+                          id="totalPrice"
+                          data-product-total="@Model.Sum(item => item.Price * item.Quantity)">
+                        @Model.Sum(item => item.Price * item.Quantity).ToString("C")
+                    </span>
+                </h4>
+
+                <button class="btn btn-danger w-100 py-2 mb-3" @(!Model.Any() ? "disabled" : "")>continuar</button>
+                <a href="@Url.Action("Index", "Product")" class="text-decoration-none d-block text-center mb-2">
+                    adicionar mais produtos
+                </a>
+                <p class="text-muted small">
+                    possui cupom ou vale? você poderá usá-los na etapa de pagamento.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
