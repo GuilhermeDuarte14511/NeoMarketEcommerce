@@ -1,0 +1,27 @@
+﻿@model NeoMarket.Application.DTOs.Login.LoginRequest
+<div id="loginAccountPage" class="container d-flex justify-content-center align-items-center min-vh-100">
+    <div class="card p-4 shadow-lg rounded-4" style="max-width: 400px; width: 100%;">
+        <h2 class="text-center mb-4">Login</h2>
+        <form method="post" action="@Url.Action("Login", "Account")" id="loginForm">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="Email" placeholder="Digite seu email" required />
+            </div>
+
+            <div class="mb-3 position-relative">
+                <label for="password" class="form-label">Senha</label>
+                <div class="input-group">
+                    <input type="password" class="form-control" id="password" name="Password" placeholder="Digite sua senha" required />
+                    <span class="input-group-text" id="togglePassword" style="cursor: pointer;">
+                        <i class="bi bi-eye-fill"></i>
+                    </span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100" id="loginButton">
+                <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                Logar
+            </button>
+        </form>
+    </div>
+</div>

@@ -442,3 +442,61 @@ if (CartItemsDetailsPage) {
         document.cookie = `CartItemCount=${count}; path=/; max-age=604800`; // 7 dias
     }
 }
+
+var loginAccountPage = document.getElementById('loginAccountPage');
+
+if (loginAccountPage) {
+    const loginForm = document.getElementById('loginForm');
+    const loginButton = document.getElementById('loginButton');
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+
+    // Alternar visualização da senha
+    togglePassword.addEventListener('click', function () {
+        const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+        passwordInput.setAttribute('type', type);
+        this.innerHTML = type === 'password' ? '<i class="bi bi-eye-fill"></i>' : '<i class="bi bi-eye-slash-fill"></i>';
+    });
+
+    // Submissão do formulário de login
+    loginForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(loginForm);
+        const loginData = {
+            Email: formData.get('Email'),
+            Password: formData.get('Password')
+        };
+
+        loginButton.disabled = true;
+        loginButton.innerHTML = `
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...
+        `;
+
+        fetch('/Account/Login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(loginData)
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    toastr.success(data.message, 'Sucesso');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 1000);
+                } else {
+                    toastr.error(data.message, 'Erro');
+                    loginButton.disabled = false;
+                    loginButton.innerHTML = 'Logar';
+                }
+            })
+            .catch(error => {
+                toastr.error('Ocorreu um erro inesperado. Tente novamente.', 'Erro');
+                loginButton.disabled = false;
+                loginButton.innerHTML = 'Logar';
+            });
+    });
+}

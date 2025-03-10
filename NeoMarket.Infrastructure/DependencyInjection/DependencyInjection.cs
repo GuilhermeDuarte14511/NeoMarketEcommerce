@@ -7,6 +7,7 @@ using NeoMarket.Domain.Entities;
 using NeoMarket.Domain.Interfaces;
 using NeoMarket.Infrastructure.Data;
 using NeoMarket.Infrastructure.Repositories;
+using NeoMarket.Services;
 
 namespace NeoMarket.Infrastructure.DependencyInjection
 {
@@ -22,11 +23,13 @@ namespace NeoMarket.Infrastructure.DependencyInjection
             services.AddScoped<IStoreService, StoreService>();
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICartService, CartService>();
+            services.AddScoped<IAccountService, AccountService>();
 
             // Repositórios
             services.AddScoped<IStoreRepository, StoreRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICartRepository, CartRepository>();
+            services.AddScoped<IAccountRepository, AccountRepository>();
 
             // Repositório genérico
             services.AddScoped<IRepository<Store>, StoreRepository>();
