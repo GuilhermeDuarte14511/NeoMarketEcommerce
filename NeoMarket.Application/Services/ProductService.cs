@@ -79,7 +79,22 @@ namespace NeoMarket.Application.Services
             };
         }
 
+        public IEnumerable<ProductDto> SearchProducts(string term)
+        {
+            if (string.IsNullOrWhiteSpace(term))
+                return new List<ProductDto>();
 
+            var products = _productRepository.SearchProducts(term);
+
+            return products.Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Description = p.Description,
+                Price = p.Price,
+                ImageUrl = p.ImageUrl
+            }).Take(10).ToList();
+        }
 
     }
 }

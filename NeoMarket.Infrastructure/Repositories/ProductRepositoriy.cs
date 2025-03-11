@@ -86,6 +86,12 @@ namespace NeoMarket.Infrastructure.Repositories
                 .FirstOrDefault(p => p.Id == productId && p.IsActive);
         }
 
+        public IEnumerable<Product> SearchProducts(string term)
+        {
+            return _context.Products
+                .Where(p => p.Name.Contains(term) || p.Description.Contains(term))
+                .ToList();
+        }
 
     }
 }

@@ -1,6 +1,6 @@
 using NeoMarket.Infrastructure.DependencyInjection;
 using NeoMarket.Filters;
-using NeoMarket.Infrastructure.Converters; // Certifique-se de importar o filtro personalizado
+using NeoMarket.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,10 +36,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseSession(); // Ativa o uso de sessão
+
+// Adicionando o middleware do carrinho
+app.UseMiddleware<CartMiddleware>();
+
 app.UseRouting();
 app.UseAuthorization();
 

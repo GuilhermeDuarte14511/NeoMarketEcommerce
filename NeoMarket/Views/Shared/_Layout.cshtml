@@ -5,9 +5,11 @@
     var categories = System.Text.Json.JsonSerializer.Deserialize<List<NeoMarket.Application.DTOs.CategoryDto>>(categoriesJson) ?? new List<NeoMarket.Application.DTOs.CategoryDto>();
     var carouselImagesJson = Context.Session.GetString("StoreCarouselImages") ?? "[]";
     var carouselImages = System.Text.Json.JsonSerializer.Deserialize<List<NeoMarket.Application.DTOs.CarouselImageDto>>(carouselImagesJson) ?? new List<NeoMarket.Application.DTOs.CarouselImageDto>();
-    var cartItemCount = Context.Session.GetInt32("CartItemCount") ?? 0;
+
+    var cartItemCount = Context.Session.GetInt32("CartItemCount") ?? Convert.ToInt32(Context.Request.Cookies["CartItemCount"] ?? "0");
     var isAuthenticated = Context.Session.GetInt32("UserId").HasValue;
 }
+
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -80,6 +82,14 @@
                         </li>
                     </ul>
 
+                    <!-- Barra de Pesquisa Centralizada -->
+                    <div class="search-bar">
+                        <form class="d-flex position-relative">
+                            <input class="form-control" type="search" id="searchInput" placeholder="Buscar produtos..." aria-label="Search">
+                            <div id="searchResults" class="search-results"></div>
+                        </form>
+                    </div>
+
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item position-relative me-3">
                             <a class="nav-link" href='@Url.Action("Details", "Cart")' title="Carrinho de Compras">
@@ -139,3 +149,17 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let cartCount = document.getElementById("cartItemCount");
+
+        // Buscar valor do cookie
+        function getCookie(name) {
+            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : 0;
+        }
+
+        let count = getCookie("CartItemCount");
+        cartCount.textContent = count;
+    });
+</script>

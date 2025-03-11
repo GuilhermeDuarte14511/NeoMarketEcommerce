@@ -4,6 +4,7 @@ using NeoMarket.Application.Interfaces;
 using NeoMarket.Domain.Entities;
 using NeoMarket.Application.DTOs.Cart;
 using NeoMarket.Application.Services;
+using System.Text.Json;
 
 namespace NeoMarket.Controllers
 {
@@ -41,8 +42,9 @@ namespace NeoMarket.Controllers
             }
             else
             {
-                var cartItemsJson = HttpContext.Session.GetString("GuestCartItems") ?? "[]";
-                var cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson) ?? new List<CartItem>();
+                // Usuário não autenticado -> Salvar no Cookie
+                var cartItemsJson = Request.Cookies["GuestCartItems"] ?? "[]";
+                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson) ?? new List<CartItem>();
 
                 var existingItem = cartItems.FirstOrDefault(item => item.ProductId == productId);
                 if (existingItem != null)
@@ -54,16 +56,18 @@ namespace NeoMarket.Controllers
                     cartItems.Add(new CartItem { ProductId = productId, Quantity = quantity });
                 }
 
-                HttpContext.Session.SetString("GuestCartItems", System.Text.Json.JsonSerializer.Serialize(cartItems));
                 itemCount = cartItems.Sum(item => item.Quantity);
-                HttpContext.Session.SetInt32("CartItemCount", itemCount);
-            }
 
-            // Salvar o contador no cookie
-            Response.Cookies.Append("CartItemCount", itemCount.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+                // Salvar os itens no cookie
+                Response.Cookies.Append("GuestCartItems", JsonSerializer.Serialize(cartItems), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+
+                // Atualizar a contagem no cookie
+                Response.Cookies.Append("CartItemCount", itemCount.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+            }
 
             return Json(new { success = true, itemCount });
         }
+
 
         [HttpGet("Details")]
         public IActionResult Details()
@@ -74,6 +78,7 @@ namespace NeoMarket.Controllers
 
             if (userId.HasValue)
             {
+                // Usuário autenticado: Buscar o carrinho do banco
                 var cart = _cartService.GetCartByUserId(userId.Value);
                 if (cart != null && cart.Items.Any())
                 {
@@ -88,17 +93,24 @@ namespace NeoMarket.Controllers
             }
             else
             {
-                var guestCartItemsJson = HttpContext.Session.GetString("GuestCartItems") ?? "[]";
-                cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItemDto>>(guestCartItemsJson)
-                            ?? new List<CartItemDto>();
+                // Usuário anônimo: Buscar os itens do carrinho do cookie
+                var guestCartItemsJson = Request.Cookies["GuestCartItems"] ?? "[]";
+                cartItems = JsonSerializer.Deserialize<List<CartItemDto>>(guestCartItemsJson) ?? new List<CartItemDto>();
 
                 itemCount = cartItems.Sum(item => item.Quantity);
             }
 
-             HttpContext.Session.SetInt32("CartItemCount", itemCount);
-            Response.Cookies.Append("CartItemCount", itemCount.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+            if (userId.HasValue)
+            {
+                HttpContext.Session.SetInt32("CartItemCount", itemCount);
+            }
+            else
+            {
+                Response.Cookies.Append("CartItemCount", itemCount.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+            }
 
-            var productDetails = cartItems.Select(item => {
+            var productDetails = cartItems.Select(item =>
+            {
                 var product = _productService.GetProductById(item.ProductId);
                 return new CartProductDto
                 {
@@ -112,6 +124,7 @@ namespace NeoMarket.Controllers
 
             return View("CartDetails", productDetails);
         }
+
 
 
         [HttpGet("/Cart/CalculateShipping")]
@@ -145,6 +158,7 @@ namespace NeoMarket.Controllers
 
             if (userId.HasValue)
             {
+                // Usuário autenticado: remover do banco
                 var cart = _cartService.GetCartByUserId(userId.Value);
                 if (cart != null)
                 {
@@ -158,8 +172,9 @@ namespace NeoMarket.Controllers
             }
             else
             {
-                var cartItemsJson = HttpContext.Session.GetString("GuestCartItems") ?? "[]";
-                var cartItems = System.Text.Json.JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson) ?? new List<CartItem>();
+                // Usuário anônimo: remover do cookie
+                var cartItemsJson = Request.Cookies["GuestCartItems"] ?? "[]";
+                var cartItems = JsonSerializer.Deserialize<List<CartItem>>(cartItemsJson) ?? new List<CartItem>();
 
                 var itemToRemove = cartItems.FirstOrDefault(item => item.ProductId == productId);
                 if (itemToRemove != null)
@@ -167,15 +182,17 @@ namespace NeoMarket.Controllers
                     cartItems.Remove(itemToRemove);
                 }
 
-                HttpContext.Session.SetString("GuestCartItems", System.Text.Json.JsonSerializer.Serialize(cartItems));
                 itemCount = cartItems.Sum(item => item.Quantity);
-                HttpContext.Session.SetInt32("CartItemCount", itemCount);
-            }
 
-            // Atualizar o cookie do contador de itens no carrinho
-            Response.Cookies.Append("CartItemCount", itemCount.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+                // Atualizar o cookie com os itens restantes
+                Response.Cookies.Append("GuestCartItems", JsonSerializer.Serialize(cartItems), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+
+                // Atualizar o contador do carrinho no cookie
+                Response.Cookies.Append("CartItemCount", itemCount.ToString(), new CookieOptions { Expires = DateTimeOffset.Now.AddDays(7) });
+            }
 
             return Json(new { success = true, itemCount });
         }
+
     }
 }

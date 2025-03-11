@@ -8,6 +8,7 @@ namespace NeoMarket.Domain.Interfaces
         IEnumerable<Product> GetFilteredProducts(string subCategorySlug, List<string> brands, decimal? minPrice, decimal? maxPrice, int? minRating, string sortBy);
 
         Product GetProductById(int productId);
+        IEnumerable<Product> SearchProducts(string term);
 
     }
 }

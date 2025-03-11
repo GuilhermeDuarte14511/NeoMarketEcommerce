@@ -84,5 +84,13 @@ namespace NeoMarket.Controllers
 
             return Json(shippingOptions);
         }
+
+        [HttpGet]
+        public IActionResult Search(string term)
+        {
+            var products = _productService.SearchProducts(term);
+            return Json(products);
+        }
+
     }
 }
