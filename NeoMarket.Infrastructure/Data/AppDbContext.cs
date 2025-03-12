@@ -21,6 +21,7 @@ namespace NeoMarket.Infrastructure.Data
         public DbSet<StoreCarouselImage> StoreCarouselImages { get; set; }
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Brand> Brands { get; set; }
+        public DbSet<CustomerStore> CustomerStore { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -28,6 +29,7 @@ namespace NeoMarket.Infrastructure.Data
 
             ConfigureUser(modelBuilder);
             ConfigureStore(modelBuilder);
+            ConfigureCustomerStore(modelBuilder);
             ConfigureProduct(modelBuilder);
             ConfigureCart(modelBuilder);
             ConfigureOrder(modelBuilder);
@@ -78,6 +80,13 @@ namespace NeoMarket.Infrastructure.Data
                 .Property(u => u.Password)
                 .IsRequired()
                 .HasMaxLength(255);
+
+            // Relacionamento 1:N entre Store e Users (Usuários da loja)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Store)
+                .WithMany(s => s.Users)
+                .HasForeignKey(u => u.StoreId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
 
         private void ConfigureStore(ModelBuilder modelBuilder)
@@ -112,13 +121,39 @@ namespace NeoMarket.Infrastructure.Data
                 .HasMany(s => s.CarouselImages)
                 .WithOne(c => c.Store)
                 .HasForeignKey(c => c.StoreId)
-                .OnDelete(DeleteBehavior.Restrict);
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Store>()
                 .HasMany(s => s.Products)
                 .WithOne(p => p.Store)
                 .HasForeignKey(p => p.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Relacionamento 1:1 entre Store e o Administrador (User)
+            modelBuilder.Entity<Store>()
+                .HasOne(s => s.User)
+                .WithOne()
+                .HasForeignKey<Store>(s => s.UserId)
                 .OnDelete(DeleteBehavior.Restrict);
+        }
+
+        private void ConfigureCustomerStore(ModelBuilder modelBuilder)
+        {
+            // Tabela intermediária para vincular clientes a lojas
+            modelBuilder.Entity<CustomerStore>()
+                .HasKey(cs => new { cs.UserId, cs.StoreId });
+
+            modelBuilder.Entity<CustomerStore>()
+                .HasOne(cs => cs.User)
+                .WithMany()
+                .HasForeignKey(cs => cs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<CustomerStore>()
+                .HasOne(cs => cs.Store)
+                .WithMany()
+                .HasForeignKey(cs => cs.StoreId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
         private void ConfigureProduct(ModelBuilder modelBuilder)
         {

@@ -24,12 +24,14 @@ namespace NeoMarket.Infrastructure.DependencyInjection
             services.AddScoped<IProductService, ProductService>();
             services.AddScoped<ICartService, CartService>();
             services.AddScoped<IAccountService, AccountService>();
+            services.AddScoped<ICustomerStoreService, CustomerStoreService>();
 
             // Repositórios
             services.AddScoped<IStoreRepository, StoreRepository>();
             services.AddScoped<IProductRepository, ProductRepository>();
             services.AddScoped<ICartRepository, CartRepository>();
             services.AddScoped<IAccountRepository, AccountRepository>();
+            services.AddScoped<ICustomerStoreRepository, CustomerStoreRepository>();
 
             // Repositório genérico
             services.AddScoped<IRepository<Store>, StoreRepository>();

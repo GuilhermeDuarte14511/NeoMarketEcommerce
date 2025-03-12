@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace NeoMarket.Domain.Entities
+﻿namespace NeoMarket.Domain.Entities
 {
     public class User
     {
@@ -19,5 +13,9 @@ namespace NeoMarket.Domain.Entities
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public UserType UserType { get; set; }
+
+        public int? StoreId { get; set; }
+        public Store Store { get; set; }
     }
+
 }

@@ -2,6 +2,7 @@
 using NeoMarket.Domain.Interfaces;
 using NeoMarket.Infrastructure.Data;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace NeoMarket.Infrastructure.Repositories
 {
@@ -29,7 +30,11 @@ namespace NeoMarket.Infrastructure.Repositories
                     BirthDate = u.BirthDate,
                     IsActive = u.IsActive,
                     CreatedAt = u.CreatedAt,
-                    UserType = u.UserType
+                    UserType = u.UserType,
+                    Store = _context.CustomerStore
+                        .Where(cs => cs.UserId == u.Id)
+                        .Select(cs => cs.Store)
+                        .FirstOrDefault() // Obtém a primeira loja associada ao usuário
                 })
                 .FirstOrDefault();
         }
@@ -49,7 +54,11 @@ namespace NeoMarket.Infrastructure.Repositories
                     BirthDate = u.BirthDate,
                     IsActive = u.IsActive,
                     CreatedAt = u.CreatedAt,
-                    UserType = u.UserType
+                    UserType = u.UserType,
+                    Store = _context.CustomerStore
+                        .Where(cs => cs.UserId == u.Id)
+                        .Select(cs => cs.Store)
+                        .FirstOrDefault() // Obtém a primeira loja associada ao usuário
                 })
                 .FirstOrDefault();
         }

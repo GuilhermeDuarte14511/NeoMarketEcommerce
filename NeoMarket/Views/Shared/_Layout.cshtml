@@ -36,7 +36,7 @@
     <link rel="stylesheet" href="~/NeoMarket.styles.css" asp-append-version="true" />
 </head>
 <body>
-    <header>
+    <header id="pageLayoutPrincipal">
         <nav class="navbar navbar-expand-lg navbar-custom shadow-sm">
             <div class="container-fluid">
                 <a class="navbar-brand" asp-controller="Home" asp-action="Index" asp-route-urlSlug="@storeUrlSlug">
@@ -69,6 +69,7 @@
                                                 <li>
                                                     <a class="dropdown-item d-flex align-items-center"
                                                        asp-controller="Product"
+                                                       asp-controller="Product"
                                                        asp-action="Index"
                                                        asp-route-subCategorySlug="@subcategoria.UrlSlug">
                                                         <i class="fas fa-caret-right me-2"></i>@subcategoria.Name
@@ -83,20 +84,28 @@
                     </ul>
 
                     <ul class="navbar-nav ms-auto">
+                        <!-- Ícone do Carrinho de Compras -->
                         <li class="nav-item position-relative me-3">
-                            <a class="nav-link" href='@Url.Action("Details", "Cart")' title="Carrinho de Compras">
+                            <a class="nav-link position-relative d-flex align-items-center" href='@Url.Action("Details", "Cart")' title="Carrinho de Compras">
                                 <i class="bi bi-cart-fill" style="font-size: 1.8rem;"></i>
-                                <span id="cartItemCount" class="badge bg-danger position-absolute top-0 start-100 translate-middle">
-                                    @cartItemCount
-                                </span>
+                                @if (cartItemCount > 0)
+                                {
+                                    <span id="cartItemCount" class="badge bg-danger position-absolute top-0 start-100 translate-middle">
+                                        @cartItemCount
+                                    </span>
+                                }
                             </a>
                         </li>
-                        <!-- Ícone do Perfil e Login -->
+
+                        <!-- Ícone do Perfil e Nome do Usuário -->
                         @if (isAuthenticated)
                         {
-                            <li class="nav-item me-3">
-                                <a class="nav-link" href="@Url.Action("Profile", "Account")" title="Perfil">
-                                    <i class="bi bi-person-circle" style="font-size: 1.8rem;"></i>
+                            var userName = Context.Session.GetString("UserName") ?? "Usuário";
+
+                            <li class="nav-item d-flex align-items-center me-3">
+                                <a class="nav-link d-flex align-items-center" href="@Url.Action("Profile", "Account")" title="Perfil">
+                                    <i class="bi bi-person-circle me-2" style="font-size: 1.8rem;"></i>
+                                    <span class="fw-bold text-white">Olá, @userName</span>
                                 </a>
                             </li>
                         }
@@ -112,6 +121,7 @@
                             </li>
                         }
                     </ul>
+
                 </div>
             </div>
         </nav>
@@ -149,17 +159,3 @@
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let cartCount = document.getElementById("cartItemCount");
-
-        // Buscar valor do cookie
-        function getCookie(name) {
-            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-            return match ? match[2] : 0;
-        }
-
-        let count = getCookie("CartItemCount");
-        cartCount.textContent = count;
-    });
-</script>

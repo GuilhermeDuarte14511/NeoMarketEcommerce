@@ -14,7 +14,7 @@ namespace NeoMarket.Services
             _accountRepository = accountRepository;
         }
 
-        public UserDTO Authenticate(LoginRequest request)   
+        public UserDTO Authenticate(LoginRequest request)
         {
             var user = _accountRepository.GetUserByEmailAndPassword(request.Email, request.Password);
             if (user == null || user.UserType != UserType.Customer) return null;
@@ -28,8 +28,10 @@ namespace NeoMarket.Services
                 RG = user.RG,
                 CPF = user.CPF,
                 BirthDate = user.BirthDate,
-                IsActive = user.IsActive
-            };
+                IsActive = user.IsActive,
+                UrlSlug = user.Store?.UrlSlug            };
         }
+
+
     }
 }

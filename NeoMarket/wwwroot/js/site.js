@@ -64,6 +64,36 @@ $('#exampleForm').submit(function (e) {
     });
 });
 
+var pageLayoutPrincipal = document.getElementById('pageLayoutPrincipal');
+if (pageLayoutPrincipal) {
+    document.addEventListener("DOMContentLoaded", function () {
+        let cartCount = document.getElementById("CartItemCount");
+
+        // Função para obter o valor do cookie
+        function getCookie(name) {
+            let match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+            return match ? match[2] : "0"; // Retorna "0" se o cookie não existir
+        }
+
+        // Obtendo a quantidade do carrinho do cookie
+        let count = getCookie("CartItemCount");
+
+        // Verifica se o elemento existe antes de modificar
+        if (cartCount) {
+            // Atualiza o conteúdo do badge
+            cartCount.textContent = count;
+
+            // Esconde o badge se a quantidade for 0
+            if (count === "0" || count === "") {
+                cartCount.style.display = "none"; // Esconde se estiver vazio
+            } else {
+                cartCount.style.display = "inline-block"; // Exibe o badge
+            }
+        }
+    });
+
+}
+
 $(document).ready(function () {
     $("#searchInput").on("input", function () {
         let query = $(this).val().trim();
@@ -528,7 +558,6 @@ if (loginAccountPage) {
             this.innerHTML = type === "password" ? '<i class="bi bi-eye-fill text-muted"></i>' : '<i class="bi bi-eye-slash-fill text-primary"></i>';
         });
 
-        // Submissão do formulário de login
         loginForm.addEventListener("submit", function (e) {
             e.preventDefault();
 
@@ -540,8 +569,8 @@ if (loginAccountPage) {
 
             loginButton.disabled = true;
             loginButton.innerHTML = `
-                <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...
-            `;
+        <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Entrando...
+    `;
 
             fetch("/Account/Login", {
                 method: "POST",
@@ -552,7 +581,10 @@ if (loginAccountPage) {
                 .then(data => {
                     if (data.success) {
                         toastr.success(data.message, "Sucesso");
-                        setTimeout(() => { window.location.href = "/"; }, 1000);
+
+                        // Se `urlSlug` existir, redireciona para a página correta
+                        const redirectUrl = data.urlSlug ? `/${data.urlSlug}` : "/";
+                        setTimeout(() => { window.location.href = redirectUrl; }, 1000);
                     } else {
                         toastr.error(data.message, "Erro");
                         loginButton.disabled = false;
@@ -565,6 +597,7 @@ if (loginAccountPage) {
                     loginButton.innerHTML = "Entrar";
                 });
         });
+
     });
 
 
