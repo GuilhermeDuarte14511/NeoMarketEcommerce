@@ -82,14 +82,6 @@
                         </li>
                     </ul>
 
-                    <!-- Barra de Pesquisa Centralizada -->
-                    <div class="search-bar">
-                        <form class="d-flex position-relative">
-                            <input class="form-control" type="search" id="searchInput" placeholder="Buscar produtos..." aria-label="Search">
-                            <div id="searchResults" class="search-results"></div>
-                        </form>
-                    </div>
-
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item position-relative me-3">
                             <a class="nav-link" href='@Url.Action("Details", "Cart")' title="Carrinho de Compras">
@@ -124,7 +116,15 @@
             </div>
         </nav>
     </header>
-
+    <div class="container mt-3">
+        <div class="input-group shadow-sm">
+            <input class="form-control" type="search" id="searchInput" placeholder="Buscar produtos..." aria-label="Search">
+            <div id="searchResults" class="search-results"></div>
+            <button class="btn btn-primary" type="submit">
+                <i class="fas fa-search"></i>
+            </button>
+        </div>
+    </div>
     <div class="container mt-4">
         <main role="main" class="pb-3">
             @RenderBody()
